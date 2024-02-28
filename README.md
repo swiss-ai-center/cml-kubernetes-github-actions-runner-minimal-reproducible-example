@@ -2,7 +2,7 @@
 
 This repository contains a minimal reproducible example to illustrate a bug
 occuring with CML and Kubernetes using a GitHub Actions Runner as described in
-[this issue](https://github.com/iterative/cml/issues/1415).
+[CML Issue #1415](https://github.com/iterative/cml/issues/1415).
 
 ## Prerequisites
 
@@ -17,7 +17,25 @@ In order to run this example, you will need the following:
 
 At the time of writing, the following versions were used:
 
-- Kubernetes v1.21.5
+```sh
+# Display gcloud version
+$ gcloud --version
+Google Cloud SDK 466.0.0
+alpha 2024.02.26
+beta 2024.02.26
+bq 2.0.101
+bundled-python3-unix 3.11.7
+core 2024.02.26
+gcloud-crc32c 1.0.0
+gke-gcloud-auth-plugin 0.5.8
+gsutil 5.27
+kubectl 1.26.13
+
+# Display Kubernetes cluster version
+$ gcloud container clusters list
+NAME                LOCATION        MASTER_VERSION      MASTER_IP      MACHINE_TYPE   NODE_VERSION        NUM_NODES  STATUS
+kubernetes-cluster  europe-west1-b  1.27.8-gke.1067004  34.34.161.209  e2-standard-2  1.27.8-gke.1067004  1          RUNNING
+```
 
 ## Reproducing the bug
 
@@ -30,7 +48,7 @@ Initialize and configure gcloud:
 
 ```sh title="Execute the following command(s) in a terminal"
 # Initialize and login to Google Cloud
-gcloud init
+$ gcloud init
 ```
 
 ### Create a new project on GCP
@@ -39,13 +57,13 @@ Create a new project on GCP:
 
 ```sh
 # Export the project ID
-export GCP_PROJECT_ID=cml-k8s-github-runner-mre
+$ export GCP_PROJECT_ID=cml-k8s-github-runner-mre
 
 # Create a new project
-gcloud projects create $GCP_PROJECT_ID
+$ gcloud projects create $GCP_PROJECT_ID
 
 # Select your Google Cloud project
-gcloud config set project $GCP_PROJECT_ID
+$ gcloud config set project $GCP_PROJECT_ID
 ```
 
 ### Link the billing account to the project
@@ -54,13 +72,14 @@ Link the billing account to the project:
 
 ```sh
 # List the billing accounts
-gcloud billing accounts list
+$ gcloud billing accounts list
 
 # Export the billing account ID
-export GCP_BILLING_ACCOUNT_ID=YOUR_BILLING_ACCOUNT_ID
+$ export GCP_BILLING_ACCOUNT_ID=YOUR_BILLING_ACCOUNT_ID
 
 # Link the billing account to the project
-gcloud billing projects link $GCP_PROJECT_ID --billing-account $GCP_BILLING_ACCOUNT_ID
+$ gcloud billing projects link $GCP_PROJECT_ID \
+    --billing-account $GCP_BILLING_ACCOUNT_ID
 ```
 
 ### Create a Kubernetes cluster
@@ -69,18 +88,18 @@ Enable the Google Kubernetes Engine API to create Kubernetes clusters on Google:
 
 ```sh
 # Enable the Google Kubernetes Engine API
-gcloud services enable container.googleapis.com
+$ gcloud services enable container.googleapis.com
 ```
 
 Create a new Kubernetes cluster:
 
 ```sh
 # Export the cluster name and zone
-export GCP_K8S_CLUSTER_NAME=kubernetes-cluster
-export GCP_K8S_CLUSTER_ZONE=europe-west1-b
+$ export GCP_K8S_CLUSTER_NAME=kubernetes-cluster
+$ export GCP_K8S_CLUSTER_ZONE=europe-west1-b
 
 # Create the Kubernetes cluster
-gcloud container clusters create \
+$ gcloud container clusters create \
     --machine-type=e2-standard-2 \
     --num-nodes=1 \
     --zone=$GCP_K8S_CLUSTER_ZONE \
@@ -93,20 +112,20 @@ Create a new service account to authenticate to Google Cloud:
 
 ```sh
 # Create the Google Service Account
-gcloud iam service-accounts create gcp-service-account \
+$ gcloud iam service-accounts create gcp-service-account \
     --display-name="Google Cloud Platform Service Account"
 
 # Set the Kubernetes Cluster permissions for the Google Service Account
-gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
+$ gcloud projects add-iam-policy-binding $GCP_PROJECT_ID \
     --member="serviceAccount:gcp-service-account@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/container.developer"
 
 # Export the Google Service Account Key
-gcloud iam service-accounts keys create ~/.config/gcloud/gcp-service-account.json \
+$ gcloud iam service-accounts keys create ~/.config/gcloud/gcp-service-account.json \
     --iam-account=gcp-service-account@$GCP_PROJECT_ID.iam.gserviceaccount.com
 
 # Display the Google Service Account Key
-cat ~/.config/gcloud/gcp-service-account.json
+$ cat ~/.config/gcloud/gcp-service-account.json
 ```
 
 ### Add GitHub Actions Secrets
@@ -150,11 +169,12 @@ jobs:
       - name: Setup CML
         uses: iterative/setup-cml@v2
         with:
-          version: "0.20.0"
+          version: '0.20.0'
 
       - name: Initialize runner on Kubernetes
         env:
           REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          TF_LOG_PROVIDER: DEBUG
         run: |
           # Export the Kubernetes configuration
           export KUBERNETES_CONFIGURATION=$(cat $KUBECONFIG)
@@ -175,17 +195,24 @@ jobs:
 
 ### Run the workflow
 
-Push a new commit to the repository or run the workflow manually.
+Commit and push the GitHub Workflow file.
+
+The workflow will be triggered on each push or you can run the workflow
+manually.
 
 ### Current behavior
 
 The workflow fails with the following error:
 
 ```sh
+
 ```
 
 ### Expected behavior
 
+### Elements that were tested
+
+### Possible workarounds
 
 ## Conclusion
 

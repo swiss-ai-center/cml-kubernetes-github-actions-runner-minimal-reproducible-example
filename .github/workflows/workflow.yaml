@@ -30,6 +30,7 @@ jobs:
       - name: Initialize runner on Kubernetes
         env:
           REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          TF_LOG_PROVIDER: DEBUG
         run: |
           # Export the Kubernetes configuration
           export KUBERNETES_CONFIGURATION=$(cat $KUBECONFIG)
