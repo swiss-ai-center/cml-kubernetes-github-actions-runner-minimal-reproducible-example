@@ -204,6 +204,23 @@ Commit and push the GitHub Workflow file.
 The workflow will be triggered on each push or you can run the workflow
 manually.
 
+### Delete the Kubernetes cluster
+
+Delete the Kubernetes cluster to avoid incurring costs with the following
+command:
+
+```bash
+# Delete the Kubernetes cluster
+gcloud container clusters delete \
+    --zone $GCP_K8S_CLUSTER_ZONE $GCP_K8S_CLUSTER_NAME
+```
+
+## Bug analysis
+
+We were able to use CML succesfully with the same setup a year ago. Then,
+suddenly, the workflows stopped working. We are unable to find the cause of the
+issue.
+
 ### Current behavior
 
 The workflow fails with the followind behavior:
@@ -1277,12 +1294,6 @@ The workflow fails with the followind behavior:
 3. The runner executes the workflow
 4. The workflow runs successfully
 
-### Notes
-
-We were able to use CML succesfully with the same setup a year ago. Then,
-suddenly, the workflows stopped working. We are unable to find the cause of the
-issue.
-
 ### Elements that were tested
 
 Other then the elements mentioned in the related issue, the following elements
@@ -1328,8 +1339,8 @@ As a result of the investigation, we have the following questions:
 - Are there any workarounds or fixes that we can apply?
 - Should we try to use a different cloud provider?
 
-We have available resources to help Iterative to resolve the issue and are willing to
-contribute to the resolution of the issue.
+We have available resources to help Iterative to resolve the issue and are
+willing to contribute to the resolution of the issue.
 
 ## References
 
